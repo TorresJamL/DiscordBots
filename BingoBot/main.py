@@ -6,9 +6,10 @@ import json
 
 from discord.ext import commands
 from form import FormModal
-from _t_ import TOKEN, GUILD_ID
 from bingo import BingoCard, CardSquare
+from game_utils import GameData
 from pathlib import Path
+from _t_ import TOKEN, GUILD_ID
 
 tracemalloc.start()
 
@@ -22,24 +23,40 @@ client = commands.Bot(command_prefix='-', intents=intents)
 test_guild = discord.Object(id = GUILD_ID)
 
 class Game:
+    __active_sessions = {} # {sesh_id : data_directory, ...}
+    
     def __init__(self):
-        self.free_squares = {}
-        self.personal_squares = {}
+        self.sesh_id = 0
+        self.sesh_data_dir = ""
+
+        self.free_squares: dict[str, list] = {}
+        self.personal_squares: dict[str, list] = {}
         self.random_squares = []
+
+        self.player_to_card: dict[str, BingoCard] = {}
     
     def game_start(self):
         pass
 
+    def save(self):
+        pass
+    
+    @staticmethod
+    def postsave(func):
+        def wrapper():
+            func()
+        return wrapper
+    
+    @staticmethod
+    def add_game_session(id:int, data_directory:str):
+        pass
+    
     def load_square_data(self):
-        curr_file_dir = Path(__file__).resolve().parent
-        form_resp_path = curr_file_dir / "GameData/form_responses.json"
-        
-        if not Path(form_resp_path).exists():
-            with open(form_resp_path, 'w+') as responses_json:
-                json.dump(dict(), responses_json, indent=4)
+        response_dict = GameData.get_data_from_json("form_responses.json")[0]
 
-        with open(form_resp_path, 'r') as responses_json:
-            response_dict:dict = json.load(responses_json)
+    def load_game_data(self):
+        pass
+
 
         
 

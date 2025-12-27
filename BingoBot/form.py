@@ -49,7 +49,7 @@ class FormModal(discord.ui.Modal):
             ephemeral=True
         )
         
-        response_dict, form_resp_path = GameData.get_data_from_json("")
+        response_dict, form_resp_path = GameData.get_data_from_json("form_responses.json")
 
         user = interaction.user.name
         if response_dict.get(user) == None:
