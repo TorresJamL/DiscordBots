@@ -6,6 +6,9 @@ class ConventionError(Exception):
     def __init__(self, *args):
         super().__init__(*args)
 
+class GameruleException(Exception):
+    pass
+
 class GameData:
     @staticmethod
     def get_data_from_json(json_file_name: str) -> tuple[dict, Path]:

@@ -32,8 +32,9 @@
 
 # All of these can be in one file. If it becomes messy, i'll organize them.
 
-import discord
-
+from game_utils import GameruleException, GameData
+from dataclasses import dataclass
+import random
 ### Format for 5x5 ###
 #* R P P P R
 #* P R R R P
@@ -41,42 +42,88 @@ import discord
 #* P R R R P
 #* R P P P R
 ### Format for 5x5 ###
+@dataclass
+class CardSquare:
+    sq_type: str
+    sq_val: str
+    state: bool
 
 class BingoCard:
-    def __init__(self, owner: str, is_individual:bool = True, ):
-        self.bingo_grid = []
+    def __init__(self, owner: str, is_individual:bool = True, n:int = 5):
+        if n % 2 == 0: 
+            raise GameruleException(f"n must be odd. Caught: n = {n}")
+        self.owner = owner
+        self.is_individual = is_individual
+        self.n = n
 
-class CardSquare:
-    """ A class to represent a singular square on a bingo card.
+        self.grid = [None] * n
 
-    Parameters
-    -------------
-    sq_type: :class:`str`
-        The type of the square: 
+    @staticmethod
+    def to_bingo_squares(sq_type:str, sq_vals:list):
+        return list(map(lambda val : CardSquare(sq_type, val, True), sq_vals[:]))
+
+    def generate_board(
+            self, 
+            p_squares:list[CardSquare], 
+            r_squares:list[CardSquare], 
+            f_squares:list[CardSquare]):
+        """_summary_
+
+        Args:
+            p_squares (list[CardSquare]): _description_
+            r_squares (list[CardSquare]): _description_
+            f_squares (list[CardSquare]): _description_
+
+        Raises:
+            GameruleException: _description_
+            GameruleException: _description_
+        """
+        if len(p_squares) + len(r_squares) + 1 < self.n **2:
+            raise GameruleException(f"Not enough squares for user:{self.owner}'s bingo card.")
         
-        .. Free:: The middle square of a bingo card.
-        .. Personal:: A person goal square of a bingo card.
-        .. Random:: Any random event square of a bingo card.
+        if self.n == 5:
+            priority_format_5x5 = [
+                ['R', 'P', 'P', 'P', 'R'],
+                ['P', 'R', 'R', 'R', 'P'],
+                ['P', 'R', 'F', 'R', 'P'],
+                ['P', 'R', 'R', 'R', 'P'],
+                ['R', 'P', 'P', 'P', 'R'],
+            ]
+            def __create_square(i:int, j:int, L: list, M:list):
+                """Changes grid @ (i, j) to a random item in L, if L is empty: choose a random item from M."""
+                if L:
+                    self.grid[i][j] = random.choice(L)
+                    L.remove(self.grid[i][j])
+                else:
+                    self.grid[i][j] = random.choice(M)
+                    M.remove(self.grid[i][j])
 
-    sq_val: :class:`str`
-        The contents of the square.
+            p = p_squares[:]
+            r = r_squares[:]
+            f = f_squares[:]
+            for i in range(5):
+                for j in range(5):
+                    match priority_format_5x5[i][j]:
+                        case 'P':
+                            __create_square(i, j, p, r)
+                        case 'R':
+                            __create_square(i, j, r, p)
+                        case 'F':
+                            if f: self.grid[i][j] = random.choice(f)
+                            else: raise GameruleException("No Free Squares Provided.")
+        else:
+            squares = p_squares[:] + r_squares[:]
+            for i in range(self.n):
+                for j in range(self.n):
+                    if i == self.n // 2 and j == self.n // 2:
+                        self.grid[i][j] = random.choice(f_squares)
 
-    user_of_origin: Optional[:class:`str` | :class:`discord.User` | :class:`discord.Member`]
-        The discord user that created the square.
-        
-        .. useless:: Only meant to be used for debugging purposes.
-    """
-    def __init__(self, sq_type, sq_val, user_of_origin = None):
-        self.type = sq_type
-        self.val = sq_val
-        self.state = True
-        self.__og_user = user_of_origin
+    def load_card(self):
+        """Generates a bingo card from an pre-existing format."""
+        pass
 
-    def get_origin(self):
-        return self.__og_user
-    
-    def __str__(self):
-        return self.val
-    
-    def __eq__(self, other):
-        return self.type == other.type and self.val == other.val
+def test():
+    resp = GameData.get_data_from_json("form_responses.json")[0]
+    sqs = BingoCard.to_bingo_squares(resp['zingiez'])
+
+test()
