@@ -15,7 +15,7 @@ class GameData:
         if len(json_file_name) < 5:
             raise ConventionError(f"File Names should never be < 5 characters for file name: {json_file_name}")
         curr_file_dir = Path(__file__).resolve().parent
-        if json_file_name[-6: -1] == ".json":
+        if ".json" in json_file_name:
             form_resp_path = curr_file_dir / f"GameData/{json_file_name}"
         else:
             form_resp_path = curr_file_dir / f"GameData/{json_file_name}.json"

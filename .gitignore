@@ -1,1 +1,4 @@
 BingoBot/_t_.py
+
+# Game data should not be public.
+GameData/*

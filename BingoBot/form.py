@@ -4,6 +4,7 @@ import json
 
 from pathlib import Path
 from game_utils import GameData
+from discord.ext import commands
 
 class FormModal(discord.ui.Modal):
     def __init__(self):

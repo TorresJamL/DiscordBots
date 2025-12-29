@@ -123,7 +123,7 @@ class BingoCard:
         """Generates a bingo card from an pre-existing format."""
         pass
 
-    def sSqu_state(self, i, j, state:bool):
+    def flip_squ_state(self, i, j, state:bool):
         self.grid[i][j].state = state
 
     def __str__(self):
