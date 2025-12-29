@@ -35,6 +35,7 @@
 from game_utils import GameruleException, GameData
 from dataclasses import dataclass
 import random
+
 ### Format for 5x5 ###
 #* R P P P R
 #* P R R R P
@@ -56,7 +57,7 @@ class BingoCard:
         self.is_individual = is_individual
         self.n = n
 
-        self.grid = [None] * n
+        self.grid: list[list[CardSquare]] = [([None] * n) for i in range(5)]
 
     @staticmethod
     def to_bingo_squares(sq_type:str, sq_vals:list):
@@ -64,9 +65,9 @@ class BingoCard:
 
     def generate_board(
             self, 
+            f_squares:list[CardSquare],
             p_squares:list[CardSquare], 
-            r_squares:list[CardSquare], 
-            f_squares:list[CardSquare]):
+            r_squares:list[CardSquare]) -> None:
         """_summary_
 
         Args:
@@ -122,8 +123,51 @@ class BingoCard:
         """Generates a bingo card from an pre-existing format."""
         pass
 
-def test():
-    resp = GameData.get_data_from_json("form_responses.json")[0]
-    sqs = BingoCard.to_bingo_squares(resp['zingiez'])
+    def sSqu_state(self, i, j, state:bool):
+        self.grid[i][j].state = state
 
-test()
+    def __str__(self):
+        res_s = f"Board Owned by: {self.owner}:\n"
+        for i in range(len(self.grid)):
+            res_s += '['
+            for j in range(len(self.grid)):
+                res_s += self.grid[i][j].sq_val
+                if j < len(self.grid) - 1:
+                    res_s += ','
+            res_s += ']\n'
+        return res_s
+        
+def test():
+    temp_dict = {
+        "zingiez": {
+            "Free": [],
+            "Personal": [],
+            "Random": []
+        }
+    }
+    for i in range(random.randint(13, 30)):
+        temp_dict['zingiez']['Free'].append(f"FreeSQ #{i}")
+        temp_dict['zingiez']['Personal'].append(f"PersSQ #{i}")
+        temp_dict['zingiez']['Random'].append(f"RandSQ #{i}")
+    
+    # resp = GameData.get_data_from_json("form_responses.json")[0]
+    # F_sqs, P_sqs, R_sqs = tuple(map(
+    #     lambda x : BingoCard.to_bingo_squares(x, temp_dict['zingiez'][x]), ['Free', "Personal", "Random"]))  
+    # testBoard = BingoCard("zingiez")
+    # testBoard.generate_board(F_sqs, P_sqs, R_sqs)
+
+    dummyBoards = [BingoCard("zingiez1"), BingoCard("zingiez2"), BingoCard("zingiez3")]
+    F_sqs, P_sqs, R_sqs = tuple(map(
+        lambda x : BingoCard.to_bingo_squares(x, temp_dict['zingiez'][x]), ['Free', "Personal", "Random"]))  
+    for board in dummyBoards:
+        board.generate_board(F_sqs, P_sqs, R_sqs)
+        print(board)
+
+    dummyBoards[0].grid[0][4].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][3].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][2].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][1].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][0].sq_val = "OVERWRITTEN VALUE"
+
+    for board in dummyBoards:
+        print(board)
