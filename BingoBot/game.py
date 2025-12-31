@@ -2,19 +2,13 @@ import discord
 
 from bingo import * # greed 
 from discord.ext import commands
-###
+###! IDEA ABANDONED FOR NOW
 # GameData/
 # |-seshid/
 #   |-form_responses
 #   |-instance_data 
-class Game:
-    __active_sessions = {} # {sesh_id : data_directory, ...}
-    
-    def __init__(self, guild_invoked: discord.Guild, invoker: discord.User):
-        self.sesh_id: str = "" #! Game is NOT serializable, too many other components. 
-                               #? Possible solution: make a dict representation of all relevant classes.
-        self.sesh_data_dir = ""
-        
+class Game:    
+    def __init__(self):
         self.data_loaded = False
 
         self.free_squares: dict[str, list[CardSquare]] = {}
@@ -25,8 +19,8 @@ class Game:
         self.player_to_card: dict[str, BingoCard] = {}
         self.session_card: BingoCard = None
 
-    # def save(self):
-    #     pass
+    def save(self):
+        pass
     
     # @staticmethod
     # def postsave(func):
@@ -34,13 +28,11 @@ class Game:
     #         func()
     #     return wrapper
 
-    def init_sesh_id(self, guild_id: int, invoker_id: int) -> str:
-        sesh_id = str(len(Game.__active_sessions)) + ":<" + hex(guild_id) + ">" + ",<" + hex(invoker_id) + ">"
-        Game.__active_sessions
-        return sesh_id
-
     def game_start(self):
         self.generate_boards()
+
+    def save_data_exists(self):
+        pass
 
     def generate_boards(self):
         """ Initializes player_to_card. """
@@ -81,6 +73,8 @@ class Game:
                     case _:
                         raise Exception(f"How'd you get here? iter: {i}")
 
+    def cross_out_sq(self, user: str, squ_coord: tuple[int]):
+        self.player_to_card[user].flip_squ_state(squ_coord[0], squ_coord[1], False)
 
     def print_data(self):
         print(self.free_squares)

@@ -11,6 +11,14 @@ class GameruleException(Exception):
 
 class GameData:
     @staticmethod
+    def data_exists(file_name) -> bool:
+        curr_file_dir = Path(__file__).resolve().parent
+        data_path = curr_file_dir / f"GameData/{file_name}"
+        if Path(data_path).exists():
+            return True
+        return False
+
+    @staticmethod
     def get_data_from_json(json_file_name: str) -> tuple[dict, Path]:
         if len(json_file_name) < 5:
             raise ConventionError(f"File Names should never be < 5 characters for file name: {json_file_name}")

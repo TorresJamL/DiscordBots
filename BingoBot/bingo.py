@@ -32,9 +32,11 @@
 
 # All of these can be in one file. If it becomes messy, i'll organize them.
 
+import random
+
 from game_utils import GameruleException, GameData
 from dataclasses import dataclass
-import random
+from PIL import Image, ImageDraw
 
 ### Format for 5x5 ###
 #* R P P P R
@@ -45,12 +47,12 @@ import random
 ### Format for 5x5 ###
 @dataclass
 class CardSquare:
-    sq_type: str
-    sq_val: str
-    state: bool
+    sq_type:str
+    sq_val:str
+    state:bool
 
 class BingoCard:
-    def __init__(self, owner: str, is_individual:bool = True, n:int = 5):
+    def __init__(self, owner:str, is_individual:bool = True, n:int = 5):
         if n % 2 == 0: 
             raise GameruleException(f"n must be odd. Caught: n = {n}")
         self.owner = owner
@@ -58,6 +60,7 @@ class BingoCard:
         self.n = n
 
         self.grid: list[list[CardSquare]] = [([None] * n) for i in range(5)]
+        self.__img_path:str
 
     @staticmethod
     def to_bingo_squares(sq_type:str, sq_vals:list):
@@ -125,6 +128,12 @@ class BingoCard:
 
     def flip_squ_state(self, i, j, state:bool):
         self.grid[i][j].state = state
+
+    def board_to_image(self):
+        if not GameData.data_exists(f"{self.owner}_board.png"): #* First time making the image
+            pass
+        else:
+            pass
 
     def __str__(self):
         res_s = f"Board Owned by: {self.owner}:\n"
