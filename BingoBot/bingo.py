@@ -36,7 +36,8 @@ import random
 
 from game_utils import GameruleException, GameData
 from dataclasses import dataclass
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
+from graphics import CardGraphic
 
 ### Format for 5x5 ###
 #* R P P P R
@@ -60,7 +61,7 @@ class BingoCard:
         self.n = n
 
         self.grid: list[list[CardSquare]] = [([None] * n) for i in range(5)]
-        self.__img_path:str
+        self.__img_path:str = None
 
     @staticmethod
     def to_bingo_squares(sq_type:str, sq_vals:list):
@@ -129,11 +130,9 @@ class BingoCard:
     def flip_squ_state(self, i, j, state:bool):
         self.grid[i][j].state = state
 
-    def board_to_image(self):
-        if not GameData.data_exists(f"{self.owner}_board.png"): #* First time making the image
-            pass
-        else:
-            pass
+    def visualize_board(self):
+        if GameData.data_exists(f"{self.owner}_board.png"): #* First time making the image
+            return 
 
     def __str__(self):
         res_s = f"Board Owned by: {self.owner}:\n"
@@ -178,5 +177,8 @@ def test():
     dummyBoards[0].grid[0][1].sq_val = "OVERWRITTEN VALUE"
     dummyBoards[0].grid[0][0].sq_val = "OVERWRITTEN VALUE"
 
-    for board in dummyBoards:
-        print(board)
+    dummyBoards[0].grid[0][3].state = False
+
+    CardGraphic.generate_image(dummyBoards[0].grid)
+
+test()

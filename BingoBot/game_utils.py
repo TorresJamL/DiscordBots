@@ -1,5 +1,6 @@
 import json
 
+from functools import reduce
 from pathlib import Path
 
 class ConventionError(Exception):
@@ -7,7 +8,8 @@ class ConventionError(Exception):
         super().__init__(*args)
 
 class GameruleException(Exception):
-    pass
+    def __init__(self, *args):
+        super().__init__(*args)
 
 class GameData:
     @staticmethod
@@ -34,3 +36,4 @@ class GameData:
 
         with open(form_resp_path, 'r') as responses_json:
             return (dict(json.load(responses_json)), form_resp_path)
+     
