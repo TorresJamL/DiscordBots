@@ -1,8 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
-
+from bingo import CardSquare
 class CardGraphic:
     @staticmethod
-    def find_max_width(grid:list[list]):
+    def find_max_width(grid:list[list[CardSquare]]):
         max_width = 0
         for row in grid:
             for col in row:
@@ -10,39 +10,37 @@ class CardGraphic:
         return max_width
     
     @staticmethod
-    def wrap_text(text:str, font, max_width, draw:ImageDraw):
+    def wrap_text(text:str, font, max_width, draw:ImageDraw) -> list:
         """
         Wraps text to fit within the max_width.
         """
         words = text.split()
-        lines = [] # Holds each line in the text box
-        current_line = [] # Holds each word in the current line under evaluation.
+        lines = [] 
+        current_line = [] 
 
         for word in words:
-            # Check the width of the current line with the new word added
             test_line = ' '.join(current_line + [word])
             width = draw.textlength(test_line, font=font)
             if width <= max_width:
                 current_line.append(word)
             else:
-                # If the line is too wide, finalize the current line and start a new one
                 lines.append(' '.join(current_line))
                 current_line = [word]
 
-        # Add the last line
         if current_line:
             lines.append(' '.join(current_line))
 
         return lines
 
     @staticmethod
-    def generate_image(grid:list[list]):
+    def generate_image(grid:list[list[CardSquare]], username:str) -> str:
         max_width = 300 # CardGraphic.find_max_width(grid)
-        img_size, img_color = (max_width * len(grid), max_width * len(grid)), (255,255,255)
+        img_size, img_color = (max_width * len(grid) + 10, max_width * len(grid) + 10), (255,255,255)
 
         img = Image.new(mode='RGB', size=img_size, color=img_color)
         drawing_ctx = ImageDraw.Draw(img)
-        x, y = 0, 0
+        i = 5
+        x, y = i, i
         for i in range(len(grid)):
             for j in range(len(grid)):
                 if not grid[i][j].state: 
@@ -61,7 +59,7 @@ class CardGraphic:
                 else:
                     drawing_ctx.rectangle(background_box, 
                                         fill="red", 
-                                        outline="black", width=2)
+                                        outline="black", width=5)
 
                 contents = ""
                 for t in wrapped_text:
@@ -85,7 +83,9 @@ class CardGraphic:
                 ) 
                 
                 x += max_width
-            x = 0
+            x = i
             y += max_width
         
-        img.show()
+        img_path = f""
+        img.save()
+        return img_path

@@ -1,7 +1,8 @@
 import discord
 
-from bingo import * # greed 
-from discord.ext import commands
+from bingo import *
+from graphics import CardGraphic
+
 ###! IDEA ABANDONED FOR NOW
 # GameData/
 # |-seshid/
@@ -80,3 +81,41 @@ class Game:
         print(self.free_squares)
         print(self.personal_squares)
         print(self.random_squares)
+
+def test():
+    temp_dict = {
+        "zingiez": {
+            "Free": [],
+            "Personal": [],
+            "Random": []
+        }
+    }
+    for i in range(random.randint(13, 30)):
+        temp_dict['zingiez']['Free'].append(f"FreeSQ #{i}")
+        temp_dict['zingiez']['Personal'].append(f"PersSQ #{i}")
+        temp_dict['zingiez']['Random'].append(f"RandSQ #{i}")
+    
+    # resp = GameData.get_data_from_json("form_responses.json")[0]
+    # F_sqs, P_sqs, R_sqs = tuple(map(
+    #     lambda x : BingoCard.to_bingo_squares(x, temp_dict['zingiez'][x]), ['Free', "Personal", "Random"]))  
+    # testBoard = BingoCard("zingiez")
+    # testBoard.generate_board(F_sqs, P_sqs, R_sqs)
+
+    dummyBoards = [BingoCard("zingiez1"), BingoCard("zingiez2"), BingoCard("zingiez3")]
+    F_sqs, P_sqs, R_sqs = tuple(map(
+        lambda x : BingoCard.to_bingo_squares(x, temp_dict['zingiez'][x]), ['Free', "Personal", "Random"]))  
+    for board in dummyBoards:
+        board.generate_board(F_sqs, P_sqs, R_sqs)
+        print(board)
+
+    dummyBoards[0].grid[0][4].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][3].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][2].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][1].sq_val = "OVERWRITTEN VALUE"
+    dummyBoards[0].grid[0][0].sq_val = "OVERWRITTEN VALUE"
+
+    dummyBoards[0].grid[0][3].state = False
+
+    CardGraphic.generate_image(dummyBoards[0].grid)
+
+test()
