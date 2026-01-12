@@ -1,3 +1,4 @@
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from bingo import CardSquare
 class CardGraphic:
@@ -39,8 +40,8 @@ class CardGraphic:
 
         img = Image.new(mode='RGB', size=img_size, color=img_color)
         drawing_ctx = ImageDraw.Draw(img)
-        i = 5
-        x, y = i, i
+        xi = 5
+        x, y = xi, xi
         for i in range(len(grid)):
             for j in range(len(grid)):
                 if not grid[i][j].state: 
@@ -83,9 +84,28 @@ class CardGraphic:
                 ) 
                 
                 x += max_width
-            x = i
+            x = xi
             y += max_width
-        
-        img_path = f""
-        img.save()
+        try:
+            img_path = f"BingoBot\\GameData\\CardImgs\\{username}_board.png"
+            img.save(img_path, "PNG")
+        except OSError as os_err:
+            print("OS ERROR",os_err)
+            print("Attempting to create folder location...")
+            try:
+                Path(f"BingoBot\\GameData\\CardImgs").mkdir()
+                img_path = f"BingoBot\\GameData\\CardImgs\\{username}_board.png"
+                img.save(img_path, "PNG")
+            except FileExistsError as FE_err:
+                print("???")
+                raise RuntimeError("Forceful Termination, read error above^")
+            except PermissionError:
+                print("---Permissions Denied---")
+            except Exception as unexp_err: 
+                print(f"Unexpected Error Occur: {unexp_err}")
+                raise RuntimeError("Forceful Termination, read error above^")
+            else:
+                print("Re-route Successful.")
+        except Exception as err:
+            print(f"Big Uh-Oh 'ere\n|Path:{img_path}\n|Error:{err}")
         return img_path

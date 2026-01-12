@@ -1,4 +1,5 @@
 BingoBot/_t_.py
+__pycache__/
 
 # Game data should not be public.
-GameData/*
+GameData

@@ -36,6 +36,7 @@ import random
 
 from game_utils import GameruleException, GameData
 from dataclasses import dataclass
+from functools import reduce
 
 ### Format for 5x5 ###
 #* R P P P R
@@ -58,12 +59,14 @@ class BingoCard:
         self.is_individual = is_individual
         self.n = n
 
-        self.grid: list[list[CardSquare]] = [([None] * n) for i in range(5)]
-        self.__img_path:str = None
+        self.grid: list[list[CardSquare]] = [([None] * n) for i in range(n)]
 
     @staticmethod
-    def to_bingo_squares(sq_type:str, sq_vals:list):
-        return list(map(lambda val : CardSquare(sq_type, val, True), sq_vals[:]))
+    def to_bingo_squares(sq_type:str, sq_vals:list[str | tuple[str, bool]]):
+        if list(filter(lambda s : isinstance(s, str), sq_vals)):
+            return list(map(lambda val : CardSquare(sq_type, val, True), sq_vals[:]))
+        else:
+            return list(map(lambda val : CardSquare(sq_type, val[0], val[1]), sq_vals[:]))
 
     def generate_board(
             self, 
@@ -84,6 +87,15 @@ class BingoCard:
         if len(p_squares) + len(r_squares) + 1 < self.n **2:
             raise GameruleException(f"Not enough squares for user:{self.owner}'s bingo card.")
         
+        def __create_square(i:int, j:int, L: list, M:list):
+            """Changes grid @ (i, j) to a random item in L, if L is empty: choose a random item from M."""
+            if L:
+                self.grid[i][j] = random.choice(L)
+                L.remove(self.grid[i][j])
+            else:
+                self.grid[i][j] = random.choice(M)
+                M.remove(self.grid[i][j])
+        
         if self.n == 5:
             priority_format_5x5 = [
                 ['R', 'P', 'P', 'P', 'R'],
@@ -92,14 +104,6 @@ class BingoCard:
                 ['P', 'R', 'R', 'R', 'P'],
                 ['R', 'P', 'P', 'P', 'R'],
             ]
-            def __create_square(i:int, j:int, L: list, M:list):
-                """Changes grid @ (i, j) to a random item in L, if L is empty: choose a random item from M."""
-                if L:
-                    self.grid[i][j] = random.choice(L)
-                    L.remove(self.grid[i][j])
-                else:
-                    self.grid[i][j] = random.choice(M)
-                    M.remove(self.grid[i][j])
 
             p = p_squares[:]
             r = r_squares[:]
@@ -115,22 +119,57 @@ class BingoCard:
                             if f: self.grid[i][j] = random.choice(f)
                             else: raise GameruleException("No Free Squares Provided.")
         else:
-            squares = p_squares[:] + r_squares[:]
-            for i in range(self.n):
-                for j in range(self.n):
-                    if i == self.n // 2 and j == self.n // 2:
-                        self.grid[i][j] = random.choice(f_squares)
-
-    def load_card(self):
+            try:
+                squares = p_squares[:] + r_squares[:]
+                for i in range(self.n):
+                    for j in range(self.n):
+                        if i == self.n // 2 and j == self.n // 2:
+                            self.grid[i][j] = random.choice(f_squares)
+                        else: 
+                            self.grid[i][j] = random.choice(squares)
+            except Exception as err:
+                print(err)
+                print(len(self.grid), len(self.grid[0]))
+                print(self.n)
+                print(self.owner)
+    def load_card(
+            self, 
+            card_rough_data:list[tuple[str, tuple[int]]], # [["Random | 6 | Bob",[0, 0]], ... ]
+            f_sqs: list[CardSquare], 
+            p_sqs: list[CardSquare], 
+            r_sqs: list[CardSquare]):
         """Generates a bingo card from an pre-existing format."""
-        pass
+        for val in card_rough_data:
+            try:
+                i, j = val[1][0], val[1][1]
+                grid_val = list(filter(lambda sq : sq.sq_val == val[0], f_sqs + p_sqs + r_sqs))[0]
+                self.grid[i][j] = grid_val
+            except Exception as err:
+                print(i, j)
+                print(err)
+
 
     def flip_squ_state(self, i, j, state:bool):
         self.grid[i][j].state = state
 
-    def visualize_board(self):
-        if GameData.data_exists(f"{self.owner}_board.png"): #* First time making the image
-            return 
+    def win_check(self) -> bool:
+        # A win is defined as any row or column marked or a diagonal is entirely marked.
+        rows = [True for _ in range(self.n)] 
+        cols = [True for _ in range(self.n)]
+        diags = [True, True]
+
+        for i in range(self.n):
+            for j in range(self.n):
+                rows[i] = not self.grid[i][j].state and rows[i]
+                cols[i] = not self.grid[j][i].state and cols[i]
+                if i == j:
+                    diags[0] = not self.grid[i][j].state and diags[0]
+                if i + j == self.n - 1:
+                    diags[1] = not self.grid[i][j].state and diags[1]
+
+        return (reduce(lambda x, y: x or y, rows) or 
+                reduce(lambda x, y: x or y, cols) or 
+                diags[0] or diags[1])
 
     def __str__(self):
         res_s = f"Board Owned by: {self.owner}:\n"
